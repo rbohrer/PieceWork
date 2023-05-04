@@ -43,24 +43,23 @@ class ParserTests extends AnyFlatSpec with Matchers{
       |}""".stripMargin
 
   val chaikin: String =
-    """
-      chaikin(shape s, number i) {
+    """chaikin(shape s, number i) {
       |if (i > 0) {
-      |j = 0;
-      |while(j < s.edges.length()) {
-      |e1 = s.edges[j];
-      |e2 = s.edges[j+1];
-      |if (j == s.edges.length() - 1){
-      |e2 = s.edges[0];
+      |j := 0;
+      |while(j < s.edges.length) {
+      |e1 := s.edges[j];
+      |e2 := s.edges[j+1];
+      |l := s.edges.length
+      |if (j = l - 1){
+      |e2 := s.edges[0];
       |}
-      |p1 = mark(e1, 0.75);
-      |p2 = mark(e2, 0.25);
-      |[_, s] = cut(p1, p2);
+      |p1 := mark(e1, 0.75);
+      |p2 := mark(e2, 0.25);
+      |[_, s] := cut(p1, p2);
       |}
       |chaikin(s, i-1);
       |} else {
       |return s;
-      |}
       |}
       |}
       |main(){

@@ -76,7 +76,7 @@ object Parser {
   }
 
   def builtinMethod[_: P]: P[String] = {
-    P("x" | "y" | "beg" | "end" | "edges" | "mat" | "shapes" | "subst").!
+    P("x" | "y" | "beg" | "end" | "edges" | "mat" | "shapes" | "subst" | "length").!
   }
 
   def numericFactor[_: P]: P[Expression] = {
@@ -126,6 +126,7 @@ object Parser {
             case (e, (".","beg")) => DotBeg(e)
             case (e, (".","end")) => DotEnd(e)
             case (e, (".","edges")) => DotEdges(e)
+            case (e, (".","length")) => DotLength(e)
             case (e, (".","mat")) => DotMat(e)
             case (e, (".","shapes")) => DotShapes(e)
             case (e, (".","subst")) => DotSubst(e)
@@ -144,8 +145,9 @@ object Parser {
 
   def atomProg[_: P]: P[Expression] = markProg | cutProg | sewProg
 
-  def ifProg[_: P]: P[IfThenElse] = P("if" ~/ "(" ~ expr ~ ")" ~ "{" ~  prog ~ "}" ~ "else" ~ "{" ~ prog ~  "}").
-    map({case(x,y,z) => IfThenElse(x,y,z)})
+  def ifProg[_: P]: P[IfThenElse] = P("if" ~/ "(" ~ expr ~ ")" ~ "{" ~  prog ~ "}" ~ ("else" ~ "{" ~ prog ~  "}").?).
+    map({case(x,y,Some(z)) => IfThenElse(x,y,z)
+        case(x,y,None) => IfThenElse(x,y,Assign(AssignVar(Variable("x")),Variable("x")))})
 
   def whileProg[_: P]: P[While] = P("while" ~/ "(" ~ expr ~ ")" ~ "{" ~  prog ~ "}").
     map({case(x,y) => While(x,y)})

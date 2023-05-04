@@ -42,6 +42,7 @@ case class DotEdges(e: Expression) extends Expression
 case class DotMat(e: Expression) extends Expression
 case class DotShapes(e: Expression) extends Expression
 case class DotSubst(e: Expression) extends Expression
+case class DotLength(e: Expression) extends Expression
 case class Indexed(e: Expression, n: Numeric) extends Expression
 
 sealed trait Numeric extends Expression {}
