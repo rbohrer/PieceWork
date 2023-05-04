@@ -7,6 +7,7 @@ sealed trait Tp {}
 case object NumericType extends Tp
 case object BoolType extends Tp
 case object PointType extends Tp
+case object ShapeType extends Tp
 case object EdgeType extends Tp
 case class ListType(elementType: Tp) extends Tp
 
@@ -16,11 +17,7 @@ case class FunDecl (name: String, args: List[(String, Tp)], body: Program) exten
 
 
 sealed trait Program {}
-case class Mark(e: Expression, n : Numeric) extends Program
-case class Cut(b: Expression, e: Expression) extends Program
-case class Sew(l: Expression, r: Expression) extends Program
 case class Sequence(l: Program, r: Program) extends Program
-case class Call(name: String, args: List[Expression]) extends Program
 case class Assign(lhs: Assignable, rhs: Expression) extends Program
 case class IfThenElse(cond: Expression, trueBranch: Program, falseBranch: Program) extends Program
 case class While(cond: Expression, body: Program) extends Program
@@ -28,10 +25,14 @@ case class Return(e: Expression) extends Program
 
 
 sealed trait Expression extends Program {}
+case class Call(name: String, args: List[Expression]) extends Expression
+case class Mark(e: Expression, n : Numeric) extends Expression
+case class Cut(b: Expression, e: Expression) extends Expression
+case class Sew(l: Expression, r: Expression) extends Expression
 case class Point(x: Double, y: Double) extends Expression
-case class Edge(beg: Point, end: Point) extends Expression
+case class Edge(beg: Expression, end: Expression) extends Expression
 case class Material(r: Double, g: Double, b: Double) extends Expression
-case class SimpleShape(edges: List[Edge], mat: Material) extends Expression
+case class SimpleShape(edges: List[Expression], mat: Expression) extends Expression
 case class ComplexShape(shapes: List[SimpleShape], subst: RenamingSubstitution) extends Expression
 case class DotX(e: Expression) extends Expression
 case class DotY(e: Expression) extends Expression
