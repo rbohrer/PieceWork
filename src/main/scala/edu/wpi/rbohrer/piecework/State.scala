@@ -3,9 +3,14 @@ package edu.wpi.rbohrer.piecework
 case class State(var decls: List[Decl], var env: List[Map[String,Value]]) {
   def addDecls(ds: List[Decl]): State = State(decls ++ ds, env)
   def updateVar(x: String, v: Value): State = {
-    val (e :: es) = env
-    val e1 = e.+(x -> v)
-    State(decls, e1 :: es)
+    env match {
+      case e:: es =>
+        val e1 = e.+(x -> v)
+        State(decls, e1 :: es)
+      case _ =>
+        State(decls, Map(x -> v) :: Nil)
+    }
+
   }
 
   def getVar(x: String): Value  = {
