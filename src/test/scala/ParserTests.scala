@@ -236,4 +236,12 @@ class ParserTests extends AnyFlatSpec with Matchers{
     print(x)
     val Parsed.Success(_,_) = x
   }
+
+  it should "parse field access in while loop guard" in {
+    val input = "chaikin(shape s, number i) {" +
+      "while(j < s.edges.length) {}}"
+    val x = fastparse.parse(input, Parser.file(_))
+    print(x)
+    val Parsed.Success(_,_) = x
+  }
 }

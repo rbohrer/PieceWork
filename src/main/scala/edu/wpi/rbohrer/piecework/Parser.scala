@@ -78,6 +78,9 @@ object Parser {
   def builtinMethod[_: P]: P[String] = {
     P("x" | "y" | "beg" | "end" | "edges" | "mat" | "shapes" | "subst" | "length").!
   }
+  def builtinMethods[_: P]: P[List[String]] = {
+    builtinMethod.rep(sep=".").map(_.toList)
+  }
 
   def numericFactor[_: P]: P[Expression] = {
     atomExpr.rep(sep="*",min=1).map(_.toList).map({
@@ -95,9 +98,12 @@ object Parser {
       })
     })
   }
+  //def numericExprs[_: P]: P[List[Expression]] = {
+  //  numericExpr.rep(sep=)
+  //}
 
   def prop[_: P]: P[Proposition] = {
-    (numericExpr ~ ("<=" | "<" | "=" | ">" | ">=").! ~/ numericExpr).map({
+    (dottedExpr ~ ("<=" | "<" | "=" | ">" | ">=").! ~/ dottedExpr).map({
       case (e1: Numeric ,"<=",e2: Numeric ) => LessEqual(e1,e2)
       case (e1: Numeric ,"<",e2: Numeric ) => Less(e1,e2)
       case (e1: Numeric ,"=",e2: Numeric ) => Equal(e1,e2)
@@ -106,7 +112,7 @@ object Parser {
     })
   }
 
-  def propExpr[_: P]: P[Expression] = atomProg | prop  |  numericExpr
+  def propExpr[_: P]: P[Expression] = atomProg | prop  |  dottedExpr
 
   //def indexedExpr[_: P]: P[Expression] = {
 //    P(dottedExpr ~ ("[" ~/ numericExpr ~ "]").?).map(
@@ -115,24 +121,23 @@ object Parser {
 //  }
 
   def dottedExpr[_: P]: P[Expression] = {
-    P ((propExpr ~ ((".".! ~ builtinMethod)
-      | ("[".! ~/ numericExpr ~ "]")).rep).map({
-      case (e, kws) if  kws.isEmpty => e
-      case (e, kws) =>
-          kws.foldLeft(e)({
-            case (e, ("[", n:Numeric)) => Indexed(e,n)
-            case (e, (".","x")) => DotX(e)
-            case (e, (".","y")) => DotY(e)
-            case (e, (".","beg")) => DotBeg(e)
-            case (e, (".","end")) => DotEnd(e)
-            case (e, (".","edges")) => DotEdges(e)
-            case (e, (".","length")) => DotLength(e)
-            case (e, (".","mat")) => DotMat(e)
-            case (e, (".","shapes")) => DotShapes(e)
-            case (e, (".","subst")) => DotSubst(e)
-          })}))}
+    P ((numericExpr ~
+      (((".".! ~ builtinMethod) | ("[".! ~ numericExpr ~ "]")).rep())
+      )
+      .map({case (e, posts) =>
+        posts.foldLeft(e)({
+      case (e, ("[", n:Numeric)) => Indexed(e,n)
+      case (e, (".","x")) => DotX(e)
+      case (e, (".","y")) => DotY(e)
+      case (e, (".","beg")) => DotBeg(e)
+      case (e, (".","end")) => DotEnd(e)
+      case (e, (".","edges")) => DotEdges(e)
+      case (e, (".","length")) => DotLength(e)
+      case (e, (".","mat")) => DotMat(e)
+      case (e, (".","shapes")) => DotShapes(e)
+      case (e, (".","subst")) => DotSubst(e)})}))}
 
-  def expr[_: P]: P[Expression] = dottedExpr
+  def expr[_: P]: P[Expression] = propExpr
 
   def markProg[_: P]: P[Mark] = P("mark" ~ "(" ~ expr ~ "," ~ numericExpr ~ ")").
     map({case(x,y:Numeric) => Mark(x,y)})

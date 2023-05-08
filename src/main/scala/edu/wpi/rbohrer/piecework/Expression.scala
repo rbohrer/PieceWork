@@ -52,15 +52,15 @@ case class SimpleShape(edges: List[Expression], mat: Expression) extends Express
 }
 case class ComplexShape(shapes: List[SimpleShape], subst: RenamingSubstitution) extends Expression with Value with AnyShape {
 }
-case class DotX(e: Expression) extends Expression
-case class DotY(e: Expression) extends Expression
+case class DotX(e: Expression) extends Expression with Numeric
+case class DotY(e: Expression) extends Expression with Numeric
 case class DotBeg(e: Expression) extends Expression
 case class DotEnd(e: Expression) extends Expression
 case class DotEdges(e: Expression) extends Expression
 case class DotMat(e: Expression) extends Expression
 case class DotShapes(e: Expression) extends Expression
 case class DotSubst(e: Expression) extends Expression
-case class DotLength(e: Expression) extends Expression
+case class DotLength(e: Expression) extends Expression with Numeric
 case class Indexed(e: Expression, n: Numeric) extends Expression
 
 sealed trait Value extends Expression
