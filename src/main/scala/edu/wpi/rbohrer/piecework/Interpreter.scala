@@ -172,7 +172,7 @@ object Interpreter {
     }
   }
 
-  def apply(e: List[FunDecl]): (Value, State) = {
+  def apply(e: List[Decl]): (Value, State) = {
     val s = State.empty.addDecls(e)
     apply(s.main.body, s)
   }
