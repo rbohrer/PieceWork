@@ -1,6 +1,6 @@
 package edu.wpi.rbohrer.piecework
 
-
+sealed trait AnyShape extends Value
 
 sealed trait Tp {}
 case object NumericType extends Tp
@@ -27,11 +27,31 @@ case class Call(name: String, args: List[Expression]) extends Expression
 case class Mark(e: Expression, n : Numeric) extends Expression
 case class Cut(b: Expression, e: Expression) extends Expression
 case class Sew(l: Expression, r: Expression) extends Expression
-case class Point(x: Double, y: Double) extends Expression with Value
+case class Point(x: Double, y: Double) extends Expression with Value {
+  def lerp(other: Point, t: Double): Point = {
+    val r = 1.0 - t
+    Point(r*x + t*other.x, r*y + t*other.y)
+  }
+}
 case class Edge(beg: Expression, end: Expression) extends Expression with Value
 case class Material(r: Double, g: Double, b: Double) extends Expression with Value
-case class SimpleShape(edges: List[Expression], mat: Expression) extends Expression with Value
-case class ComplexShape(shapes: List[SimpleShape], subst: RenamingSubstitution) extends Expression with Value
+case class SimpleShape(edges: List[Expression], mat: Expression) extends Expression with Value with AnyShape {
+  def partEdge(e: Edge): (List[Edge],Edge, List[Edge]) = {
+    var before: List[Edge] = Nil
+    var remain =  edges.asInstanceOf[List[Edge]]
+    while(remain.nonEmpty) {
+      if(remain.head == e) {
+        return (before.reverse, remain.head, remain.tail)
+      } else {
+        before = remain.head :: before
+        remain = remain.tail
+      }
+    }
+    throw new Error("edge not found in simpleshape")
+  }
+}
+case class ComplexShape(shapes: List[SimpleShape], subst: RenamingSubstitution) extends Expression with Value with AnyShape {
+}
 case class DotX(e: Expression) extends Expression
 case class DotY(e: Expression) extends Expression
 case class DotBeg(e: Expression) extends Expression
@@ -48,6 +68,9 @@ case class Tuple(xs:List[Value]) extends Value
 case object True extends Value
 case object False extends Value
 case class RenamingSubstitution(l: List[(String,String)]) extends Value
+object RenamingSubstitution {
+  def empty: RenamingSubstitution = RenamingSubstitution(Nil)
+}
 
 sealed trait Numeric extends Expression {}
 case class Number(n : Double) extends Numeric with Value

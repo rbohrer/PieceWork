@@ -59,7 +59,7 @@ object Parser {
 
   def renamingSubstitution[_: P]: P[RenamingSubstitution] = {
     P( "[" ~/ ("(" ~ ident ~ "," ~ ident ~ ")").rep(sep=",") ~ "]").
-      map(_.toList).map(RenamingSubstitution)
+      map(_.toList).map(RenamingSubstitution(_))
   }
 
 
