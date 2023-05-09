@@ -17,10 +17,10 @@ object Interpreter {
   }
 
   // Helper functions defined as in MS thesis
-  private def mrk(ss: SimpleShape, e: Edge, r: Double): SimpleShape = {
+  private def mrk(ss: SimpleShape, e: Edge, r: Double): (SimpleShape, Point) = {
     val mid = e.beg.asInstanceOf[Point].lerp(e.end.asInstanceOf[Point],r)
     val (before, at, after) = ss.partEdge(e)
-    SimpleShape(before ++ (Edge(at.beg,mid) :: Edge(mid,at.end) :: after), ss.mat)
+    (SimpleShape(before ++ (Edge(at.beg,mid) :: Edge(mid,at.end) :: after), ss.mat), mid)
   }
 
   private def ct(sh: SimpleShape, edg1: Edge, edg2: Edge): (SimpleShape, SimpleShape) = {
@@ -63,10 +63,10 @@ object Interpreter {
             val (v2: Number, s2) = apply(n,s1)
             // TODO: assert both points are on the same shape
             val (key, shape, shapes, sub) = s2.locateEdge(v1)
-            val newShape = mrk(shape,v1,v2.n)
+            val (newShape,mid) = mrk(shape,v1,v2.n)
             val cs = ComplexShape(newShape :: shapes, sub)
             val s3 = s2.updateShapeInPlace(key,cs)
-            (cs, s3)
+            (mid, s3)
           case Cut(b, e) =>
             val (vb : Point, s1) = apply(b,s)
             val (ve : Point, s2) = apply(e,s)
