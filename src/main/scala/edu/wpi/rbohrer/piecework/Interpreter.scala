@@ -17,10 +17,12 @@ object Interpreter {
   }
 
   // Helper functions defined as in MS thesis
-  private def mrk(ss: SimpleShape, e: Edge, r: Double): (SimpleShape, Point) = {
+  private def mrk(ss: SimpleShape, e: Edge, r: Double): (SimpleShape, Point, Edge, Edge) = {
     val mid = e.beg.asInstanceOf[Point].lerp(e.end.asInstanceOf[Point],r)
     val (before, at, after) = ss.partEdge(e)
-    (SimpleShape(before ++ (Edge(at.beg,mid) :: Edge(mid,at.end) :: after), ss.mat), mid)
+    (SimpleShape(before ++ (Edge(at.beg,mid) :: Edge(mid,at.end) :: after), ss.mat), mid,
+      Edge(e.beg,mid), Edge(mid,e.end)
+    )
   }
 
   private def reorderEdges(sh: SimpleShape, edg1: Edge, edg2: Edge): (Edge, Edge) = {
@@ -73,10 +75,11 @@ object Interpreter {
             val (v2: Number, s2) = apply(n,s1)
             // TODO: assert both points are on the same shape
             val (key, shape, shapes, sub) = s2.locateEdge(v1)
-            val (newShape,mid) = mrk(shape,v1,v2.n)
+            val (newShape,mid,e1,e2) = mrk(shape,v1,v2.n)
             val cs = ComplexShape(newShape :: shapes, sub)
             val s3 = s2.updateShapeInPlace(key,cs)
-            (mid, s3)
+            val s4 = s3.ghostEdge(e1).ghostEdge(e2)
+            (mid, s4)
           case Cut(b, e) =>
             val (vb : Point, s1) = apply(b,s)
             val (ve : Point, s2) = apply(e,s1)
@@ -88,8 +91,9 @@ object Interpreter {
             val s3 = s2.updateShapeInPlace(key,sh1)
             // @TODO: May need new variable
             val s4 = s3.addShapeToComplex(key, sh2)
+            val s5 = s4.ghostEdges((sh1.edges ++ sh2.edges).asInstanceOf[List[Edge]])
             // s.getVar(key.x)
-            (Tuple(sh1 :: sh2 :: Nil), s4)
+            (Tuple(sh1 :: sh2 :: Nil), s5)
           case Sew(l, r) =>
             val (vl:Edge, s1) = apply(l, s)
             val (vr:Edge, s2) = apply(r, s1)
@@ -139,7 +143,10 @@ object Interpreter {
           case DotMat(e) =>
             val (SimpleShape(_es,m:Material), s1) = apply(e,s); (m, s1)
           case DotShapes(e) =>
-            val (ComplexShape(ss, _sub), s1) = apply(e,s); (Tuple(ss), s1)
+            apply(e,s) match {
+              case (ComplexShape(ss, _sub), s1) => (Tuple(ss), s1)
+              case (ss: SimpleShape, s1) => (Tuple(List(ss)), s1)
+            }
           case DotSubst(e) =>
             val (ComplexShape(_ss, sub), s1) = apply(e,s); (sub, s1)
           case DotLength(e) =>

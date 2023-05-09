@@ -14,8 +14,8 @@ class InterpreterTests extends AnyFlatSpec with Matchers {
       |new1 := mark(t.edges[0], 0.5);
       |new2 := mark(t.edges[1], 0.5);
       |new3 := mark (t.edges[2], 0.5);
-      |[t1, t2] := cut(new1, new2);
-      |[t3, t2] := cut(new3, new2);
+      |[t1, t6] := cut(new1, new2);
+      |[t3, t5] := cut(new3, new2);
       |[t4, t2] := cut(new3, new1);
       |div1 := divideTriangle(t1, i-1);
       |div2 := divideTriangle(t2, i-1);

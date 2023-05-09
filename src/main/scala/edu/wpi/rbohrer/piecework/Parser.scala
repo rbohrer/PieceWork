@@ -10,6 +10,8 @@ object Parser {
     P ((CharIn("a-zA-Z").rep(1) ~ CharIn("a-zA-Z0-9").rep()).!)
   }
 
+  def identVar[_: P]: P[Variable] = ident.map(x => Variable(x,None))
+
   def num[_: P]: P[Double] = {
     import fastparse.NoWhitespace._
     P( (CharIn("0-9").rep(1) ~ ("." ~ CharIn("0-9").rep(1)).?).!.map(_.toDouble))
@@ -58,7 +60,7 @@ object Parser {
   }
 
   def renamingSubstitution[_: P]: P[RenamingSubstitution] = {
-    P( "[" ~/ ("(" ~ ident ~ "," ~ ident ~ ")").rep(sep=",") ~ "]").
+    P( "[" ~/ ("(" ~ identVar ~ "," ~ identVar ~ ")").rep(sep=",") ~ "]").
       map(_.toList).map(RenamingSubstitution(_))
   }
 

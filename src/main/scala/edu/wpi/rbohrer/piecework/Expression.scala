@@ -67,7 +67,7 @@ sealed trait Value extends Expression
 case class Tuple(xs:List[Value]) extends Value
 case object True extends Value
 case object False extends Value
-case class RenamingSubstitution(l: List[(String,String)]) extends Value
+case class RenamingSubstitution(l: List[(Variable,Variable)]) extends Value
 object RenamingSubstitution {
   def empty: RenamingSubstitution = RenamingSubstitution(Nil)
 }

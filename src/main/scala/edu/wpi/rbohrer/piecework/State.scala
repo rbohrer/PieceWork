@@ -8,7 +8,7 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]], var sp
       case e:: es =>
         val e1 = e.+(x -> v)
         State(decls, e1 :: es, space)
-      case _ =>
+      case Nil =>
         State(decls, Map(x -> v) :: Nil, space)
     }
   }
@@ -45,6 +45,13 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]], var sp
     State(decls, argEnv::env, space)
   }
 
+  def ghostEdge(e: Edge): State = {
+    State(decls,env,saveVar(space, "ghostEdges", e))
+  }
+  def ghostEdges(es: List[Edge]): State = {
+    es.foldLeft(this)({case (acc, e) => acc.ghostEdge(e)})
+  }
+
   private def saveVar(space: Map[String,List[Value]], k: String, v: Value): Map[String,List[Value]] = {
     if (space.contains(k))
       space + (k -> (v :: space(k)))
@@ -63,6 +70,25 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]], var sp
 
   def findFunction(name: String): FunDecl = {
     decls.find({case fd : FunDecl if fd.name == name => true}).get.asInstanceOf[FunDecl]
+  }
+
+  def bindData[T](f: (Variable, Value) => Option[T]): Option[T] = {
+    bindEnv({case (k,v) => f(Variable(k, None), v)}) match {
+      case Some(x) => Some(x)
+      case None => bindSpace({case (k,v,i) => f(Variable(k,Some(i)), v)})
+    }
+  }
+
+  def bindSpace[T](f: (String,Value,Int) => Option[T]): Option[T] = {
+    var thisEnv = space.toList
+    while(thisEnv.nonEmpty) {
+      val (k,vs) = thisEnv.head
+      vs.zipWithIndex.find({case (v,i) => f(k,v,i).isDefined}) match {
+        case Some((v,i)) => return f(k,v,i)
+        case None => thisEnv = thisEnv.tail
+      }
+    }
+    return None
   }
 
   def bindEnv[T](f: (String,Value) => Option[T]): Option[T] = {
@@ -142,8 +168,11 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]], var sp
     }), space)
   }
 
-  def nameOf(v: Value): String = {
-    bindEnv({case (k,v2) if v2 == v => Some(k) case _ => None}).get
+  def nameOf(v: Value): Variable = {
+    bindData({case (vr,v2) if v2 == v => Some(vr) case _ => None}) match {
+      case Some(x) => x
+      case None => ???
+    }
   }
 
   def locateByEnd(e: Point): Edge = {
@@ -151,9 +180,9 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]], var sp
   }
 
   def applySub(s: RenamingSubstitution): State = {
-    val subMap: Map[String,String] = s.l.toMap
+    val subMap: Map[Variable,Variable] = s.l.toMap
     val env2: List[Map[String,Value]] = env.map(m => m.map({case (k,v) =>
-      if (subMap.contains(k)) (subMap(k),v)
+      if (subMap.contains(Variable(k,None))) (subMap(Variable(k,None)).x,v)
       else (k,v)
     }))
     State(decls,env2,space)
