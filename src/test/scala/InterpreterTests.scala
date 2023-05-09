@@ -48,7 +48,7 @@ class InterpreterTests extends AnyFlatSpec with Matchers {
     """chaikin(shape s, number i) {
       |if (i > 0) {
       |j := 0;
-      |while(j < s.edges.length) {
+      |while(j+1 < s.edges.length) {
       |e1 := s.edges[j];
       |e2 := s.edges[j+1];
       |l := s.edges.length
@@ -58,6 +58,7 @@ class InterpreterTests extends AnyFlatSpec with Matchers {
       |p1 := mark(e1, 0.75);
       |p2 := mark(e2, 0.25);
       |[_, s] := cut(p1, p2);
+      |j := j + 1;
       |}
       |chaikin(s, i-1);
       |} else {
