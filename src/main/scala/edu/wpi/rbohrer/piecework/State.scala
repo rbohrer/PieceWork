@@ -65,10 +65,13 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]]) {
         case None =>
           bindEnv({case (x: String, ss: SimpleShape) =>
             ss.edges.find({case y:Edge => f(x,y).isDefined}).
-              map(y => f(x,y.asInstanceOf[Edge]))}) match {
+              map(y => f(x,y.asInstanceOf[Edge]))
+          case _ => None}) match {
             case Some(x) => x
             case None =>
-              bindEnv({case (x: String, edg: Edge) => f(x,edg)})}}})
+              bindEnv({case (x: String, edg: Edge) => f(x,edg)
+              case _ => None})}}
+    case _ => None})
     }
 
   // @TODO: This is a major hack. The fundamental problem is that our notion of
@@ -116,7 +119,7 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]]) {
   }
 
   def locateByEnd(e: Point): Edge = {
-    bindEdges({case (x,edg) =>  if (edg.end == e) Some(edg) else None}).get
+    bindEdges({case (x,edg) =>  if (edg.end == e) Some(edg) else None case _ => None}).get
   }
 
   def applySub(s: RenamingSubstitution): State = {
