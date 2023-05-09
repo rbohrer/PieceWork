@@ -76,8 +76,10 @@ object Interpreter {
             val (key, shape, shapes, sub) = s.locateEdge(edgB)
             val (sh1,sh2) = ct(shape,edgB,edgE)
             val s3 = s2.updateShapeInPlace(key,sh1)
+            // @TODO: May need new variable
             val s4 = s3.addShapeToComplex(key, sh2)
-            (s.getVar(key.x), s4)
+            // s.getVar(key.x)
+            (Tuple(sh1 :: sh2 :: Nil), s4)
           case Sew(l, r) =>
             val (vl:Edge, s1) = apply(l, s)
             val (vr:Edge, s2) = apply(r, s1)
