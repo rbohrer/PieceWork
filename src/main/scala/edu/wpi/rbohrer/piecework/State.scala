@@ -46,11 +46,13 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]]) {
       {
         val (k,v) = thisEnv.head
         f(k,v) match {
-          case Some(z) => return Some(z)
-          case _ => thisEnv = thisEnv.tail
+          case Some(z) =>
+            return Some(z)
+          case _ =>
+            thisEnv = thisEnv.tail
         }
       }
-      envs = env.tail
+      envs = envs.tail
     }
     return None
   }
@@ -75,7 +77,16 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]]) {
         bindEnv({case (x: String, ss: SimpleShape) =>
         if (ss.edges.contains(e)) { Some((Variable(x), ss, Nil:List[SimpleShape], RenamingSubstitution.empty))}
         else None
-      }).get
+      }) match {
+          case Some(y) => y
+          case _ =>
+            bindEnv({ case (x: String, edg: Edge) =>
+              if (edg == e) {
+                Some((Variable(x), SimpleShape(List(e), Material(0, 0, 0)), Nil: List[SimpleShape], RenamingSubstitution.empty))
+              }
+              else None
+            }).get
+        }
     }
   }
 
