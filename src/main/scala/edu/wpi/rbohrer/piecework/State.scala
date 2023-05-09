@@ -16,14 +16,14 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]], var sp
   // applies to both live and dead variables
   private def getLiveVar(x: String): Value = {
     var envs = env
-    while(true) {
+    while(envs.nonEmpty) {
       if(envs.head.contains(x)) {
         return envs.head(x)
       } else {
         envs = envs.tail
       }
     }
-    throw new Error("unreachable")
+    throw new Error("undefined variable " + x)
   }
 
   private def getDeadVar(str: String, i: Int): Value = {
