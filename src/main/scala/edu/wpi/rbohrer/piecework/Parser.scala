@@ -5,6 +5,9 @@ import fastparse.MultiLineWhitespace._
 import fastparse.{P, _}
 
 object Parser {
+
+  val BOGUSVAR: Variable = Variable("moStBoGuS", None)
+
   def ident[_: P]: P[String] = {
     import fastparse.NoWhitespace._
     P ((CharIn("a-zA-Z").rep(1) ~ CharIn("a-zA-Z0-9").rep()).!)
@@ -154,7 +157,7 @@ object Parser {
 
   def ifProg[_: P]: P[IfThenElse] = P("if" ~/ "(" ~ expr ~ ")" ~ "{" ~  prog ~ "}" ~ ("else" ~ "{" ~ prog ~  "}").?).
     map({case(x,y,Some(z)) => IfThenElse(x,y,z)
-        case(x,y,None) => IfThenElse(x,y,Assign(AssignVar(Variable("x", None)),Variable("x", None)))})
+        case(x,y,None) => IfThenElse(x,y,Assign(AssignVar(BOGUSVAR),Number(0)))})
 
   def whileProg[_: P]: P[While] = P("while" ~/ "(" ~ expr ~ ")" ~ "{" ~  prog ~ "}").
     map({case(x,y) => While(x,y)})
@@ -172,7 +175,7 @@ object Parser {
 
   def oneProg[_: P]: P[Program] = prefixProg | assignProg ~ P(";").?  | expr ~ P(";").?
 
-  def prog[_: P]: P[Program] = oneProg.rep.map({case Nil => Assign(AssignVar(Variable("x", None)),Variable("x", None))
+  def prog[_: P]: P[Program] = oneProg.rep.map({case Nil => Assign(AssignVar(BOGUSVAR),Number(0))
   case x => x.toList.reduceLeft[Program]({
     case (x,y) => Sequence(x,y)
   })})
