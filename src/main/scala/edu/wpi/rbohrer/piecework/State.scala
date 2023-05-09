@@ -57,6 +57,20 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]]) {
     return None
   }
 
+  def bindEdges[T](f: (String,Edge) => Option[T]): Option[T] = {
+    bindEnv({case (x:String, cs: ComplexShape) =>
+      cs.shapes.find((ss => ss.edges.exists({case y:Edge => f(x,y).isDefined}))) match {
+        case Some(ss) => ss.edges.find({case y:Edge => f(x,y).isDefined}).
+          map(y => f(x,y.asInstanceOf[Edge]).get)
+        case None =>
+          bindEnv({case (x: String, ss: SimpleShape) =>
+            ss.edges.find({case y:Edge => f(x,y).isDefined}).
+              map(y => f(x,y.asInstanceOf[Edge]))}) match {
+            case Some(x) => x
+            case None =>
+              bindEnv({case (x: String, edg: Edge) => f(x,edg)})}}})
+    }
+
   // @TODO: This is a major hack. The fundamental problem is that our notion of
   // "point value" does not maintain any sort of canonical name for an edge, which
   // on some deep level is probably going to mess up the correspondence between
@@ -102,7 +116,7 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]]) {
   }
 
   def locateByEnd(e: Point): Edge = {
-    bindEnv({case (k,edg:Edge) if edg.end == e => Some(edg) case _ => None}).get
+    bindEdges({case (x,edg) =>  if (edg.end == e) Some(edg) else None}).get
   }
 
   def applySub(s: RenamingSubstitution): State = {
