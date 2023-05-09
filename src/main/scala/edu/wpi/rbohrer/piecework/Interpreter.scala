@@ -18,7 +18,7 @@ object Interpreter {
 
   // Helper functions defined as in MS thesis
   private def mrk(ss: SimpleShape, e: Edge, r: Double): SimpleShape = {
-    val mid = e.asInstanceOf[Point].lerp(e.end.asInstanceOf[Point],r)
+    val mid = e.beg.asInstanceOf[Point].lerp(e.end.asInstanceOf[Point],r)
     val (before, at, after) = ss.partEdge(e)
     SimpleShape(before ++ (Edge(at.beg,mid) :: Edge(mid,at.end) :: after), ss.mat)
   }
@@ -120,7 +120,10 @@ object Interpreter {
           case DotEnd(e) =>
             val (Edge(beg,end:Point), s1) = apply(e,s); (end,s1)
           case DotEdges(e) =>
-            val (SimpleShape(es:List[Edge],_m), s1) = apply(e,s); (Tuple(es), s1)
+            apply(e,s) match {
+              case (SimpleShape(es:List[Edge],_m), s1) =>  (Tuple(es), s1)
+              case (ComplexShape(SimpleShape(es:List[Edge],_m) :: _, sub), s1) =>  (Tuple(es), s1)
+            }
           case DotMat(e) =>
             val (SimpleShape(_es,m:Material), s1) = apply(e,s); (m, s1)
           case DotShapes(e) =>
