@@ -57,9 +57,10 @@ object Interpreter {
       case While(cond, body) =>
         var (v1, s1) = apply(cond,s)
         while(v1 == True) {
-          val (v2, s2) = apply(cond,s)
-          v1 = v2
-          s1 = s2
+          val (v2, s2) = apply(body,s1)
+          val (v3, s3) = apply(cond,s2)
+          v1 = v3
+          s1 = s3
         }
         (v1,s1)
       case Return(e) =>
