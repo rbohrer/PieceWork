@@ -23,7 +23,16 @@ object Interpreter {
     (SimpleShape(before ++ (Edge(at.beg,mid) :: Edge(mid,at.end) :: after), ss.mat), mid)
   }
 
-  private def ct(sh: SimpleShape, edg1: Edge, edg2: Edge): (SimpleShape, SimpleShape) = {
+  private def reorderEdges(sh: SimpleShape, edg1: Edge, edg2: Edge): (Edge, Edge) = {
+    if (sh.edges.indexOf(edg1) < sh.edges.indexOf(edg2)) {
+      (edg1, edg2)
+    } else {
+      (edg2, edg1)
+    }
+  }
+
+  private def ct(sh: SimpleShape, edge1: Edge, edge2: Edge): (SimpleShape, SimpleShape) = {
+    val (edg1, edg2) = reorderEdges(sh, edge1, edge2)
     val (ea, at1, after1) = sh.partEdge(edg1)
     val (eb, at2, ec) = SimpleShape(after1, sh.mat).partEdge(edg2)
     val s1 = SimpleShape(ea ++ (at1 :: Edge(edg1.end, edg2.end) :: ec), sh.mat)
