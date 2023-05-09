@@ -36,7 +36,7 @@ object Parser {
   }
 
   def assignable[_: P]: P[Assignable] = {
-     wildcard | assignTuple | ident.map(x => AssignVar(Variable(x)))
+     wildcard | assignTuple | ident.map(x => AssignVar(Variable(x,None)))
   }
 
   def edgeList[_: P]: P[List[Expression]] = {
@@ -72,7 +72,7 @@ object Parser {
   def parenExpr[_: P]: P[Expression] = P("(" ~ expr ~ ")")
 
   def atomExpr[_: P]: P[Expression] = {
-    (parenExpr | atomProg | point | edge | material | simpleShape | complexShape | callProg | ident.map(Variable) | num.map(Number)) ~ P(";").?
+    (parenExpr | atomProg | point | edge | material | simpleShape | complexShape | callProg | ident.map(i => Variable(i, None)) | num.map(Number)) ~ P(";").?
   }
 
   def builtinMethod[_: P]: P[String] = {
@@ -152,7 +152,7 @@ object Parser {
 
   def ifProg[_: P]: P[IfThenElse] = P("if" ~/ "(" ~ expr ~ ")" ~ "{" ~  prog ~ "}" ~ ("else" ~ "{" ~ prog ~  "}").?).
     map({case(x,y,Some(z)) => IfThenElse(x,y,z)
-        case(x,y,None) => IfThenElse(x,y,Assign(AssignVar(Variable("x")),Variable("x")))})
+        case(x,y,None) => IfThenElse(x,y,Assign(AssignVar(Variable("x", None)),Variable("x", None)))})
 
   def whileProg[_: P]: P[While] = P("while" ~/ "(" ~ expr ~ ")" ~ "{" ~  prog ~ "}").
     map({case(x,y) => While(x,y)})
@@ -170,7 +170,7 @@ object Parser {
 
   def oneProg[_: P]: P[Program] = prefixProg | assignProg ~ P(";").?  | expr ~ P(";").?
 
-  def prog[_: P]: P[Program] = oneProg.rep.map({case Nil => Assign(AssignVar(Variable("x")),Variable("x"))
+  def prog[_: P]: P[Program] = oneProg.rep.map({case Nil => Assign(AssignVar(Variable("x", None)),Variable("x", None))
   case x => x.toList.reduceLeft[Program]({
     case (x,y) => Sequence(x,y)
   })})

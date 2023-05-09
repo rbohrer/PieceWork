@@ -163,7 +163,7 @@ object Interpreter {
                 val (nl:Number, s1) = apply(l, s)
                 val (nr:Number, s2) = apply(r,s1)
                 (Number(nl.n-nr.n),s2)
-              case Variable(x) => (s.getVar(x),s)
+              case v: Variable => (s.getVar(v),s)
             }
           case proposition: Proposition =>
             def doBool(l: Expression, r: Expression, f: (Double,Double) => Boolean): (Value, State) = {

@@ -77,7 +77,8 @@ case class Number(n : Double) extends Numeric with Value
 case class Plus(l: Numeric, r: Numeric) extends Numeric
 case class Times(l: Numeric, r: Numeric) extends Numeric
 case class Minus(l: Numeric, r: Numeric) extends Numeric
-case class Variable(x : String) extends Numeric
+// idx None = normal variable, in scope. idx Some(i) means out-of-scope leftovers, version i.
+case class Variable(x : String, idx: Option[Int]) extends Numeric
 
 sealed trait Proposition extends Expression {}
 case class Greater(l: Numeric, r: Numeric) extends Proposition
