@@ -69,7 +69,7 @@ object Interpreter {
             (mid, s3)
           case Cut(b, e) =>
             val (vb : Point, s1) = apply(b,s)
-            val (ve : Point, s2) = apply(e,s)
+            val (ve : Point, s2) = apply(e,s1)
             val edgB = s2.locateByEnd(vb)
             val edgE = s2.locateByEnd(ve)
             // @TODO: Check same shape
@@ -77,7 +77,7 @@ object Interpreter {
             val (sh1,sh2) = ct(shape,edgB,edgE)
             val s3 = s2.updateShapeInPlace(key,sh1)
             val s4 = s3.addShapeToComplex(key, sh2)
-            (s.getVar(key.x), s3)
+            (s.getVar(key.x), s4)
           case Sew(l, r) =>
             val (vl:Edge, s1) = apply(l, s)
             val (vr:Edge, s2) = apply(r, s1)
