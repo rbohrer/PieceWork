@@ -15,9 +15,9 @@ class PenroseTests extends AnyFlatSpec with Matchers{
       |new1 := mark(te1, 0.5);
       |new2 := mark(te2, 0.5);
       |new3 := mark (te3, 0.5);
-      |[t1, t2] := cut(new1, new2);
-      |[t3, t2] := cut(new3, new2);
-      |[t4, t2] := cut(new3, new1);
+      |[_, t1] := cut(new1, new2);
+      |[_, t2] := cut(new3, new2);
+      |[t4, t3] := cut(new3, new1);
       |div1 := divideTriangle(t1, i-1);
       |div2 := divideTriangle(t2, i-1);
       |div3 := divideTriangle(t3, i-1);
