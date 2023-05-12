@@ -11,9 +11,10 @@ class PenroseTests extends AnyFlatSpec with Matchers{
   val sierpinski: String =
     """divideTriangle(shape t, number i) {
       |if (i > 0) {
-      |new1 := mark(t.edges[0], 0.5);
-      |new2 := mark(t.edges[1], 0.5);
-      |new3 := mark (t.edges[2], 0.5);
+      |[te1, te2, te3] := t.edges;
+      |new1 := mark(te1, 0.5);
+      |new2 := mark(te2, 0.5);
+      |new3 := mark (te3, 0.5);
       |[t1, t2] := cut(new1, new2);
       |[t3, t2] := cut(new3, new2);
       |[t4, t2] := cut(new3, new1);
