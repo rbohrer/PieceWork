@@ -33,7 +33,7 @@ object PenroseConverter {
       pointMap(p)
     } else {
       val i = pointMap.size
-      val name = DEFAULT_EDGE_NAME + i
+      val name = DEFAULT_POINT_NAME + i
       pointMap = pointMap + (p -> name)
       name
     }
@@ -48,12 +48,18 @@ object PenroseConverter {
       }
     }
     var i = 0
+//    val edge
     var edgeBuf = ss.edges.map(_.asInstanceOf[Edge])
+    // decompose polygon into fan shape
+    var root = edgeBuf.head
+    edgeBuf = edgeBuf.tail
     var shExpr:Option[PenroseExpression] = None
-    while(edgeBuf.length > 2) {
-      val (a,b,c) = (nameEdge(edgeBuf(0)), nameEdge(edgeBuf(1)),nameEdge(edgeBuf(2)))
-      val triName = name + i
-      shExpr = consOpt(shExpr, Triangle(triName,a,b,c))
+    while(edgeBuf.length > 1) {
+      val (ea,eb,ec) = (nameEdge(root), nameEdge(edgeBuf(0)),nameEdge(edgeBuf(1)))
+      val (xa,xb,xc) = (namePoint(root.beg.asInstanceOf[Point]), namePoint(edgeBuf(0).beg.asInstanceOf[Point]),namePoint(edgeBuf(1).beg.asInstanceOf[Point]))
+      val triName = if(i == 0) name else name + i
+      shExpr = consOpt(shExpr, Triangle(triName,xa,xb,xc))
+      // Drop second element
       edgeBuf = edgeBuf.tail
       i = i + 1
     }
@@ -62,9 +68,9 @@ object PenroseConverter {
 
   def substance(name: String, cs: ComplexShape): PenroseExpression = {
       val sub = cs.subst
-      val shapes = cs.shapes.zipWithIndex.map({case (n, i) => ("name" + i, n)})
+      val shapes = cs.shapes.zipWithIndex.map({case (n, i) => (name + i, n)})
       val labName = shapes.head._1
-      Sequence(Label(labName, name) :: shapes.map({case(x,y)=>substance(x,y)}))
+      Sequence(shapes.map({case(x,y)=>substance(x,y)}) :+ Label(labName, name))
   }
 
   def namedEdgeSubstance: PenroseExpression = {
@@ -86,6 +92,9 @@ object PenroseConverter {
     // @TODO: Generate Penrose code!
     edges.map({case (x,y) => recordEdge(x,y)})
     // Let's first try generating just the complex shapes
-    Sequence(namedEdgeSubstance :: css.map({case ((x,y)) => substance(x,y)}))
+    val ms = css.map({case ((x,y)) => substance(x,y)})
+    val nes = namedEdgeSubstance
+    Sequence(nes :: ms)
+
   }
 }
