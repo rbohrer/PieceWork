@@ -151,7 +151,7 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]], var sp
         bindEnv({case (x: String, ss: SimpleShape) =>
         if (ss.edges.contains(e)) { Some((Variable(x, None), ss, Nil:List[SimpleShape], RenamingSubstitution.empty))}
         else None
-      }) match {
+        case _ => None}) match {
           case Some(y) => y
           case _ =>
             bindEnv({ case (x: String, edg: Edge) =>
