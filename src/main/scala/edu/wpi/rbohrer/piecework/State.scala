@@ -1,6 +1,9 @@
 package edu.wpi.rbohrer.piecework
 
 case class State(var decls: List[Decl], var env: List[Map[String,Value]], var space: Map[String,List[Value]]) {
+  def simpleEnv: Map[String, Value] = {
+    env.foldRight(Map[String,Value]())(_ ++ _) ++ space.map({case (k,v) => (k,v.last)})
+  }
   def addDecls(ds: List[Decl]): State = State(decls ++ ds, env, space)
   // N.B. updateVar can only be applied to live variables, not dead, so String vs Variable here.
   def updateVar(x: String, v: Value): State = {
