@@ -66,21 +66,28 @@ object PenroseConverter {
     shExpr.get
   }
 
-  def substance(name: String, cs: ComplexShape): PenroseExpression = {
+  def substance(map: Map[String,Value], name: String, cs: ComplexShape): PenroseExpression = {
       val sub = cs.subst
       val shapes = cs.shapes.zipWithIndex.map({case (n, i) => (name + "_" + i, n)})
       val labName = shapes.head._1
       Sequence(shapes.flatMap({
-        case(x,y:Variable)=> None
-        case(x,y:SimpleShape)=>Some(substance(x,y))
+        case(x,y:Variable)=> List(substance(x, map(y.x).asInstanceOf[SimpleShape]))
+        case(x,y:SimpleShape)=>List(substance(x,y))
       }) :+ Label(labName, name))
   }
 
-  def namedEdgeSubstance: PenroseExpression = {
+  def namedEdgeSubstance: Sequence = {
     val edgs  = edgeMap.toList.map({case (e, n) =>
       penrose.Edge(n, namePoint(e.beg.asInstanceOf[Point]), namePoint(e.end.asInstanceOf[Point]))})
-    val pts = pointMap.toList.map({case (p,n) => Vertex(n)})
-    Sequence(pts ++ edgs)
+    Sequence(edgs)
+  }
+
+  def namedPointSubstance: Sequence = {
+    Sequence(pointMap.toList.map({case (p,n) => Vertex(n)}))
+  }
+
+  def namedSubstance: Sequence = {
+    Sequence(namedPointSubstance.pes ++ namedEdgeSubstance.pes)
   }
 
   /** Generates contents of Penrose substance file
@@ -89,16 +96,17 @@ object PenroseConverter {
     val map: Map[String,Value] = s.simpleEnv
     val alist = map.toList
     val css: List[(String,ComplexShape)] = alist.filter(_._2.isInstanceOf[ComplexShape]).map({case (x,y:ComplexShape) => (x,y)})
-    val sss: List[(String,SimpleShape)] = alist.filter(_._2.isInstanceOf[SimpleShape]).map({case (x,y:SimpleShape) => (x,y)})
-    val edges: List[(String,Edge)] = alist.filter(_._2.isInstanceOf[Edge]).map({case (x,y:Edge) => (x,y)})
-    val vertices: List[(String,Point)] = alist.filter(_._2.isInstanceOf[Point]).map({case (x,y:Point) => (x,y)})
+    //val sss: List[(String,SimpleShape)] = alist.filter(_._2.isInstanceOf[SimpleShape]).map({case (x,y:SimpleShape) => (x,y)})
+    //val edges: List[(String,Edge)] = alist.filter(_._2.isInstanceOf[Edge]).map({case (x,y:Edge) => (x,y)})
+    //val vertices: List[(String,Point)] = alist.filter(_._2.isInstanceOf[Point]).map({case (x,y:Point) => (x,y)})
     // @TODO: Generate Penrose code!
-    edges.map({case (x,y) => recordEdge(x,y)})
+    //edges.map({case (x,y) => recordEdge(x,y)})
     // Let's first try generating just the complex shapes
-    val ms = css.map({case ((x,y)) => substance(x,y)})
-    val csss = sss.map({case ((x,y)) => substance(x,y)})
-    val nes = namedEdgeSubstance
-    Sequence(nes :: ms ++ csss)
+    val ms = css.map({case ((x,y)) => substance(map,x,y)})
+    //val csss = sss.map({case ((x,y)) => substance(x,y)})
+    //val nes = namedEdgeSubstance
+    Sequence(namedSubstance.pes ++ ms)
+    //Sequence(nes :: ms ++ csss)
 
   }
 }
