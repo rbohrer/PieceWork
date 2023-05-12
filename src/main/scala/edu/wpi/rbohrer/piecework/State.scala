@@ -2,7 +2,7 @@ package edu.wpi.rbohrer.piecework
 
 case class State(var decls: List[Decl], var env: List[Map[String,Value]], var space: Map[String,List[Value]]) {
   def simpleEnv: Map[String, Value] = {
-    env.foldRight(Map[String,Value]())(_ ++ _) ++ space.map({case (k,v) => (k,v.last)})
+    space.map({case (k,v) => (k,v.last)}) ++ env.foldRight(Map[String,Value]())(_ ++ _)
   }
   def addDecls(ds: List[Decl]): State = State(decls ++ ds, env, space)
   // N.B. updateVar can only be applied to live variables, not dead, so String vs Variable here.
@@ -115,8 +115,8 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]], var sp
 
   def bindEdges[T](f: (String,Edge) => Option[T]): Option[T] = {
     bindEnv({case (x:String, cs: ComplexShape) =>
-      cs.shapes.find((ss => ss.edges.exists({case y:Edge => f(x,y).isDefined}))) match {
-        case Some(ss) => ss.edges.find({case y:Edge => f(x,y).isDefined}).
+      cs.shapes.find(({case ss:SimpleShape => ss.edges.exists({case y:Edge => f(x,y).isDefined})})) match {
+        case Some(ss:SimpleShape) => ss.edges.find({case y:Edge => f(x,y).isDefined}).
           map(y => f(x,y.asInstanceOf[Edge]).get)
         case None =>
           bindEnv({case (x: String, ss: SimpleShape) =>
@@ -140,12 +140,12 @@ case class State(var decls: List[Decl], var env: List[Map[String,Value]], var sp
     // look for a complex shape containing the edge
     // if not found, look for a simple shape
     bindEnv({case (x:String, cs: ComplexShape) =>
-      cs.shapes.find((ss => ss.edges.contains(e))) match {
+      cs.shapes.find(({case ss:SimpleShape => ss.edges.contains(e)})) match {
         case None => None
         case Some(ss) => Some((Variable(x, None), ss, cs.shapes.filter(z => z != ss), cs.subst))
       }
     case _ => None}) match {
-      case Some((w,x,y,z)) => (w,x,y,z)
+      case Some((w,x: SimpleShape,y: List[SimpleShape],z)) => (w,x,y,z)
       // @TODO: Search for standalone simple shape
       case None =>
         bindEnv({case (x: String, ss: SimpleShape) =>

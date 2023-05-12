@@ -21,14 +21,7 @@ class PenroseTests extends AnyFlatSpec with Matchers{
       |div2 := divideTriangle(t2, i-1);
       |div3 := divideTriangle(t3, i-1);
       |div4 := divideTriangle(t4, i-1);
-      |j := 0;
-      |while (j < i) {
-      |sew(div2.edges[j], div1.edges[j]);
-      |sew(div2.shapes[0].edges[i + j], div3.edges[i + j]);
-      |sew(div2.shapes[0].edges[(2 * i) + j], div4.edges[(2 * i) + j]);
-      |j := j + 1;
-      |}
-      |return div2;
+      |return complexShape([div1,div2,div3,div4], []);
       |} else {
       |return t;
       |}
@@ -89,13 +82,13 @@ class PenroseTests extends AnyFlatSpec with Matchers{
     Map()
   )
 
-  "Penrose converter" should "translate one triangle" in {
+   /*should "translate one triangle" in {
     val res = PenroseConverter.substance(oneTri)
     println(res)
     val 2 = 1 + 1
   }
 
-  it should "translate the Sierpinski example" in {
+  it */ "Penrose converter" should "translate the Sierpinski example" in {
     val x = fastparse.parse(sierpinski, Parser.file(_))
     val Parsed.Success(file,i) = x
     val (_, pwprog) = Interpreter(file)

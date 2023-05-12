@@ -50,7 +50,7 @@ case class SimpleShape(edges: List[Expression], mat: Expression) extends Express
     throw new Error("edge not found in simpleshape")
   }
 }
-case class ComplexShape(shapes: List[SimpleShape], subst: RenamingSubstitution) extends Expression with Value with AnyShape {
+case class ComplexShape(shapes: List[Expression], subst: RenamingSubstitution) extends Expression with Value with AnyShape {
 }
 case class DotX(e: Expression) extends Expression with Numeric
 case class DotY(e: Expression) extends Expression with Numeric

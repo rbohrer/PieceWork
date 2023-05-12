@@ -58,18 +58,18 @@ object Parser {
     })
   }
 
-  def simpleShapeList[_: P]: P[List[SimpleShape]] = {
-    P(simpleShape.rep(sep=",").map(_.toList))
+  def simpleShapeList[_: P]: P[List[Expression]] = {
+    P("[" ~ P(identVar.rep(sep=",").map(_.toList) ~ "]"))
   }
 
   def renamingSubstitution[_: P]: P[RenamingSubstitution] = {
-    P( "[" ~/ ("(" ~ identVar ~ "," ~ identVar ~ ")").rep(sep=",") ~ "]").
+    P( "[" ~ ("(" ~ identVar ~ "," ~ identVar ~ ")").rep(sep=",") ~ "]").
       map(_.toList).map(RenamingSubstitution(_))
   }
 
 
   def complexShape[_: P]: P[ComplexShape] = {
-    P("complexShape" ~/ "(" ~  simpleShapeList ~ "," ~ renamingSubstitution ~ ")").map(
+    P("complexShape" ~ "(" ~  simpleShapeList ~ "," ~ renamingSubstitution ~ ")").map(
       {case (ssl, rs) => ComplexShape(ssl,rs)}
     )
   }

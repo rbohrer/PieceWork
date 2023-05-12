@@ -144,7 +144,7 @@ object Interpreter {
             val (SimpleShape(_es,m:Material), s1) = apply(e,s); (m, s1)
           case DotShapes(e) =>
             apply(e,s) match {
-              case (ComplexShape(ss, _sub), s1) => (Tuple(ss), s1)
+              case (ComplexShape(ss, _sub), s1) => (Tuple(ss.asInstanceOf[List[SimpleShape]]), s1)
               case (ss: SimpleShape, s1) => (Tuple(List(ss)), s1)
             }
           case DotSubst(e) =>

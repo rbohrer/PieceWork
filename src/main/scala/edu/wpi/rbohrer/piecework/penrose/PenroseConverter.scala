@@ -70,7 +70,10 @@ object PenroseConverter {
       val sub = cs.subst
       val shapes = cs.shapes.zipWithIndex.map({case (n, i) => (name + "_" + i, n)})
       val labName = shapes.head._1
-      Sequence(shapes.map({case(x,y)=>substance(x,y)}) :+ Label(labName, name))
+      Sequence(shapes.flatMap({
+        case(x,y:Variable)=> None
+        case(x,y:SimpleShape)=>Some(substance(x,y))
+      }) :+ Label(labName, name))
   }
 
   def namedEdgeSubstance: PenroseExpression = {
