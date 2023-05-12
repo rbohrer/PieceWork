@@ -23,7 +23,7 @@ object PenroseConverter {
       edgeMap(e)
     } else {
       val i = edgeMap.size
-      val name = DEFAULT_EDGE_NAME + i
+      val name = DEFAULT_EDGE_NAME + "_" + i
       edgeMap = edgeMap + (e -> name)
       name
     }
@@ -33,7 +33,7 @@ object PenroseConverter {
       pointMap(p)
     } else {
       val i = pointMap.size
-      val name = DEFAULT_POINT_NAME + i
+      val name = DEFAULT_POINT_NAME + "_" + i
       pointMap = pointMap + (p -> name)
       name
     }
@@ -57,7 +57,7 @@ object PenroseConverter {
     while(edgeBuf.length > 1) {
       val (ea,eb,ec) = (nameEdge(root), nameEdge(edgeBuf(0)),nameEdge(edgeBuf(1)))
       val (xa,xb,xc) = (namePoint(root.beg.asInstanceOf[Point]), namePoint(edgeBuf(0).beg.asInstanceOf[Point]),namePoint(edgeBuf(1).beg.asInstanceOf[Point]))
-      val triName = if(i == 0) name else name + i
+      val triName = if(i == 0) name else name + "_" + i
       shExpr = consOpt(shExpr, Triangle(triName,xa,xb,xc))
       // Drop second element
       edgeBuf = edgeBuf.tail
@@ -68,7 +68,7 @@ object PenroseConverter {
 
   def substance(name: String, cs: ComplexShape): PenroseExpression = {
       val sub = cs.subst
-      val shapes = cs.shapes.zipWithIndex.map({case (n, i) => (name + i, n)})
+      val shapes = cs.shapes.zipWithIndex.map({case (n, i) => (name + "_" + i, n)})
       val labName = shapes.head._1
       Sequence(shapes.map({case(x,y)=>substance(x,y)}) :+ Label(labName, name))
   }
@@ -93,8 +93,9 @@ object PenroseConverter {
     edges.map({case (x,y) => recordEdge(x,y)})
     // Let's first try generating just the complex shapes
     val ms = css.map({case ((x,y)) => substance(x,y)})
+    val csss = sss.map({case ((x,y)) => substance(x,y)})
     val nes = namedEdgeSubstance
-    Sequence(nes :: ms)
+    Sequence(nes :: ms ++ csss)
 
   }
 }

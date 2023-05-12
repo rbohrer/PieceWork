@@ -5,7 +5,6 @@ import org.scalatest.matchers.should._
 
 class ParserTests extends AnyFlatSpec with Matchers{
 
-
   val sierpinski: String =
     """divideTriangle(shape t, number i) {
       |if (i > 0) {
