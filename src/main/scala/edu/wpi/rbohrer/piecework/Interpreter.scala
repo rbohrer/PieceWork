@@ -49,7 +49,8 @@ object Interpreter {
         apply(r, s1)
       case Assign(lhs, rhs) =>
         val (v1,s1) = apply(rhs,s)
-        assignTo(lhs, v1, s1)
+        val (v2, s2) = assignTo(lhs, v1, s1)
+        (v2, s2)
       case IfThenElse(cond, trueBranch, falseBranch) =>
         val (v1,s1) =apply(cond,s)
         v1 match {
@@ -57,17 +58,20 @@ object Interpreter {
           case _  => apply(falseBranch, s1)
         }
       case While(cond, body) =>
-        var (v1, s1) = apply(cond,s)
+        var s0 = s
+        var (v1, s1) = apply(cond,s0)
+        s0 = s1
         while(v1 == True) {
-          val (v2, s2) = apply(body,s1)
+          val (v2, s2) = apply(body,s0)
           val (v3, s3) = apply(cond,s2)
           v1 = v3
-          s1 = s3
+          s0 = s3
         }
-        (v1,s1)
+        (v1,s0)
       case Return(e) =>
         val (v, s1) = apply(e,s)
-        (v, s1.ret)
+        val s2 = s1.ret
+        (v, s2)
       case expression: Expression =>
         expression match {
           case Mark(e, n) =>

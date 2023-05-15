@@ -41,19 +41,25 @@ class PenroseTests extends AnyFlatSpec with Matchers{
   val chaikin: String =
     """chaikin(shape s, number i) {
       |if (i > 0) {
-      |j := 0;
-      |while(j < s.edges.length) {
+      |l := s.edges.length;
+      |j := l-1;
+      |while(j >= 0) {
       |e1 := s.edges[j];
-      |e2 := s.edges[j+1];
-      |l := s.edges.length
       |if (j = l - 1){
-      |e2 := s.edges[0];
+      |  e2 := s.edges[0];
+      |  p1 := mark(e1, 0.75);
+      |  p2 := mark(e2, 0.25);
+      |  [_, s] := cut(p1, p2);
+      |} else {
+      |  e2 := s.edges[j+1];
+      |  p1 := mark(e1, 0.75);
+      |  p2 := mark(e2, 0.25);
+      |  [s, _] := cut(p1, p2);
+      |
       |}
-      |p1 := mark(e1, 0.75);
-      |p2 := mark(e2, 0.25);
-      |[_, s] := cut(p1, p2);
+      |j := j - 1;
       |}
-      |chaikin(s, i-1);
+      |return chaikin(s, i-1);
       |} else {
       |return s;
       |}
@@ -62,7 +68,7 @@ class PenroseTests extends AnyFlatSpec with Matchers{
       |p1 := point(0,0);
       |p2 := point(0,1);
       |p3 := point(1,1);
-      |p4 := point(0,1);
+      |p4 := point(1,0);
       |e1 := edge(p1,p2);
       |e2 := edge(p2,p3);
       |e3 := edge(p3,p4);
@@ -98,4 +104,70 @@ class PenroseTests extends AnyFlatSpec with Matchers{
     val 2 = 1 + 1
 
   }
+  it should "translate the Chaikin example" in {
+    val x = fastparse.parse(chaikin, Parser.file(_))
+    val Parsed.Success(file,i) = x
+    val (_, pwprog) = Interpreter(file)
+    val penroseprog = PenroseConverter.substance(pwprog)
+    println(penroseprog)
+    val 2 = 1 + 1
+  }
+
+  val sierpOutput:String = """Vertex x_3
+                             |Vertex x_1
+                             |Vertex x_0
+                             |Vertex x_2
+                             |Vertex x_4
+                             |Vertex x_5
+                             |Edge e_10 := MakeEdge(x_0,x_4)
+                             |Edge e_11 := MakeEdge(x_4,x_5)
+                             |Edge e_6 := MakeEdge(x_0,x_2)
+                             |Edge e_2 := MakeEdge(x_2,x_0)
+                             |Edge e_1 := MakeEdge(x_1,x_2)
+                             |Edge e_9 := MakeEdge(x_5,x_0)
+                             |Edge e_8 := MakeEdge(x_4,x_0)
+                             |Edge e_7 := MakeEdge(x_2,x_4)
+                             |Edge e_5 := MakeEdge(x_4,x_2)
+                             |Edge e_3 := MakeEdge(x_2,x_3)
+                             |Edge e_0 := MakeEdge(x_0,x_1)
+                             |Edge e_4 := MakeEdge(x_3,x_4)
+                             |Triangle stri_0 := MakeTriangle(x_0,x_1,x_2)
+                             |Triangle stri_1 := MakeTriangle(x_2,x_3,x_4)
+                             |Triangle stri_2 := MakeTriangle(x_0,x_2,x_4)
+                             |Triangle stri_3 := MakeTriangle(x_5,x_0,x_4)
+                             |Label stri_0 "stri"
+                             |""".stripMargin
+  val chaikinOutput: String = """Vertex x_9
+                        |Vertex x_1
+                        |Vertex x_4
+                        |Vertex x_11
+                        |Vertex x_10
+                        |Vertex x_7
+                        |Vertex x_0
+                        |Vertex x_8
+                        |Vertex x_2
+                        |Vertex x_3
+                        |Vertex x_6
+                        |Vertex x_5
+                        |Edge e_7 := MakeEdge(x_7,x_0)
+                        |Edge e_4 := MakeEdge(x_4,x_5)
+                        |Edge e_1 := MakeEdge(x_1,x_2)
+                        |Edge e_6 := MakeEdge(x_6,x_7)
+                        |Edge e_8 := MakeEdge(x_8,x_9)
+                        |Edge e_11 := MakeEdge(x_11,x_8)
+                        |Edge e_5 := MakeEdge(x_5,x_6)
+                        |Edge e_10 := MakeEdge(x_10,x_11)
+                        |Edge e_0 := MakeEdge(x_0,x_1)
+                        |Edge e_3 := MakeEdge(x_3,x_4)
+                        |Edge e_2 := MakeEdge(x_2,x_3)
+                        |Edge e_9 := MakeEdge(x_9,x_10)
+                        |Triangle s_5 := MakeTriangle(x_0,x_6,x_7)
+                        |Triangle s_4 := MakeTriangle(x_0,x_5,x_6)
+                        |Triangle s_3 := MakeTriangle(x_0,x_4,x_5)
+                        |Triangle s_2 := MakeTriangle(x_0,x_3,x_4)
+                        |Triangle s_1 := MakeTriangle(x_0,x_2,x_3)
+                        |Triangle s := MakeTriangle(x_0,x_1,x_2)
+                        |Triangle square_1 := MakeTriangle(x_8,x_10,x_11)
+                        |Triangle square := MakeTriangle(x_8,x_9,x_10)
+                        |""".stripMargin
 }
