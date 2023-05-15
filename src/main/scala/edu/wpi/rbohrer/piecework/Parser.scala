@@ -108,7 +108,7 @@ object Parser {
   //}
 
   def prop[_: P]: P[Proposition] = {
-    (dottedExpr ~ ("<=" | "<" | "=" | ">" | ">=").! ~/ dottedExpr).map({
+    (dottedExpr ~ ("<=" | ">=" | "<" | "=" | ">" ).! ~/ dottedExpr).map({
       case (e1: Numeric ,"<=",e2: Numeric ) => LessEqual(e1,e2)
       case (e1: Numeric ,"<",e2: Numeric ) => Less(e1,e2)
       case (e1: Numeric ,"=",e2: Numeric ) => Equal(e1,e2)
