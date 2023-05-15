@@ -105,7 +105,13 @@ object PenroseConverter {
     val ms = css.map({case ((x,y)) => substance(map,x,y)})
     //val csss = sss.map({case ((x,y)) => substance(x,y)})
     //val nes = namedEdgeSubstance
-    Sequence(namedSubstance.pes ++ ms)
+    if(ms.length > 0) {
+      Sequence(namedSubstance.pes ++ ms)
+    } else {
+      val sss: List[(String,SimpleShape)] = alist.filter(_._2.isInstanceOf[SimpleShape]).map({case (x,y:SimpleShape) => (x,y)})
+      val mms = sss.map({case ((x,y)) => substance(x,y)})
+      Sequence(namedSubstance.pes ++ mms)
+    }
     //Sequence(nes :: ms ++ csss)
 
   }
